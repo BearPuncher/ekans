@@ -53,11 +53,12 @@ package
 			}
 			
 			graphic = spriteMap;
-			layer = -3;
+			layer =  int(-1*(y / Arena.GRID_HEIGHT));
 			if (type == "bloodspot")
 			{
-				layer = -1;
+				layer = 100;
 			}
+			
 		}
 		
 		private function aniComplete () :void {

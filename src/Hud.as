@@ -26,7 +26,6 @@ package
 
 		public function Hud()
 		{
-			layer = -4;
 			Text.font = "scoreFont";
 
 			var title : Image = new Image( TITLE, new Rectangle( -40, -170, 984, 1020 ) );
@@ -82,6 +81,7 @@ package
 			Main.startGame();
 			Score.resetScore();
 			graphic = new Graphiclist( _highScore, _score );
+			layer = 100;
 		}
 		
 		private function updateDisplayedScore() : void
@@ -116,6 +116,7 @@ package
 		public function showGameOver() : void
 		{
 			graphic = new Graphiclist( _gameOver, _highScore, _score, _pressSpace );
+			layer = -3;
 		}
 		
 		public function applyEffects() : void

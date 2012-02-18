@@ -226,6 +226,8 @@ package
 			_gridX = tile._gridX;
 			_gridY = tile._gridY;
 			
+			layer = -_gridY;
+			
 			_direction = direction;
 			_preDir = direction;
 			isHead = head;

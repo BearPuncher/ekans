@@ -104,6 +104,7 @@ package
 				}
 			}
 			
+			
 			/*
 			if (elapsedTimeSinceLastMove > timeBetweenMoving)
 			{
@@ -111,6 +112,7 @@ package
 				
 			}*/
 			moveLerp();
+			layer = -_gridY;
 		}
 				
 		private function getMoveInput() : void

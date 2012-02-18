@@ -155,6 +155,8 @@ package
 			_gridX = gridX;
 			_gridY = gridY;
 			
+			layer = -_gridY;
+			
 			falling = true;
 			pickPeasant();
 			

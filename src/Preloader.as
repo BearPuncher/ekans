@@ -1,130 +1,102 @@
-// Modified Draknek's preloader https://gist.github.com/970285
-package
+// Modified Noel's preloader http://flashpunk.net/forums/index.php?topic=633.0
+package 
 {
 	import flash.display.*;
-	import flash.text.*;
 	import flash.events.*;
+	import flash.text.*;
 	import flash.utils.getDefinitionByName;
-
-	[SWF(width = "1024", height = "768")]
-	public class Preloader extends Sprite
+	
+	[SWF(width = "1024", height = "768")]	
+	public class Preloader extends MovieClip 
 	{
-		// Change these values
-		private static const mustClick: Boolean = true;
-		private static const mainClassName: String = "Main";
+		private var loader:Sprite = new Sprite();
+		private var border:Sprite = new Sprite();
+		private var text:TextField = new TextField();
 		
-		private static const BG_COLOR:uint = 0x000000;
-		private static const FG_COLOR:uint = 0xFFFFFF;
+		private const loaderWidth:int = 320;
+		private const loaderHeight:int = 32;
 		
-		[ Embed( source = 'assets/BloodyStump.ttf', embedAsCFF = "false", fontFamily = 'scoreFont' ) ] private const newFont : Class;
+		private const loaderColor:uint = 0xffffff;
+		private const textColor:uint = 0xbbbbbb;
+		private const backgroundColor:uint = 0x000000;
 		
-		// Ignore everything else
-		private var progressBar: Shape;
-		private var text: TextField;
+		private const main:String = "Main";
+		private var loaded:Number = 0;
 		
-		private var px:int;
-		private var py:int;
-		private var w:int;
-		private var h:int;
-		private var sw:int;
-		private var sh:int;
-		
-		public function Preloader ()
+		public function Preloader() 
 		{
-			sw = stage.stageWidth;
-			sh = stage.stageHeight;
+			// loader information
+			stage.addEventListener(Event.ENTER_FRAME, progress);
 			
-			w = stage.stageWidth * 0.8;
-			h = 20;
+			// show loader
+			addChild(loader);
+			loader.x = (stage.stageWidth / 2) - (loaderWidth / 2) + 4;
+			loader.y = (stage.stageHeight / 2) - (loaderHeight / 2) + 4;
 			
-			px = (sw - w) * 0.5;
-			py = (sh - h) * 0.5;
-			
-			graphics.beginFill(BG_COLOR);
-			graphics.drawRect(0, 0, sw, sh);
-			graphics.endFill();
-			
-			graphics.beginFill(FG_COLOR);
-			graphics.drawRect(px - 2, py - 2, w + 4, h + 4);
-			graphics.endFill();
-			
-			progressBar = new Shape();
-			
-			addChild(progressBar);
-			
-			text = new TextField();
-
-			text.textColor = FG_COLOR;
-			text.selectable = false;
-			text.mouseEnabled = false;
-			text.defaultTextFormat = new TextFormat("scoreFont", 16);
-			trace(text.defaultTextFormat.font);
-			text.embedFonts = true;
-			text.autoSize = "left";
-			text.text = "0%";
-			text.x = (sw - text.width) * 0.5;
-			text.y = sh * 0.5 + h;
-			
+			addChild(border);
+			border.x = (stage.stageWidth / 2) - (loaderWidth / 2);
+			border.y = (stage.stageHeight / 2) - (loaderHeight / 2);
+		
 			addChild(text);
+			text.x = (stage.stageWidth / 2) - (loaderWidth / 2);
+			text.y = (stage.stageHeight / 2) - (loaderHeight / 2) - 30;
+			text.textColor = textColor;
 			
-			stage.addEventListener(Event.ENTER_FRAME, onEnterFrame);
+			// render background
+			graphics.beginFill(backgroundColor, 1);
+			graphics.drawRect(0, 0, stage.stageWidth, stage.stageHeight);
+			graphics.endFill();
 			
-			if (mustClick) {
-				stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-			}
-		}
-
-		public function onEnterFrame (e:Event): void
-		{
-			if (hasLoaded())
-			{
-				graphics.clear();
-				graphics.beginFill(BG_COLOR);
-				graphics.drawRect(0, 0, sw, sh);
-				graphics.endFill();
-				
-				if (! mustClick) {
-					startup();
-				} else {
-					text.scaleX = 2.0;
-					text.scaleY = 2.0;
-				
-					text.text = "Click to start";
-			
-					text.y = (sh - text.height) * 0.5;
-				}
-			} else {
-				var p:Number = (loaderInfo.bytesLoaded / loaderInfo.bytesTotal);
-				
-				progressBar.graphics.clear();
-				progressBar.graphics.beginFill(BG_COLOR);
-				progressBar.graphics.drawRect(px, py, p * w, h);
-				progressBar.graphics.endFill();
-				
-				text.text = int(p * 100) + "%";
-			}
-			
-			text.x = (sw - text.width) * 0.5;
+			// render the border
+			border.graphics.clear();
+			border.graphics.lineStyle(2, loaderColor);
+			border.graphics.drawRect(0, 0, loaderWidth, loaderHeight);
 		}
 		
-		private function onMouseDown(e:MouseEvent):void {
-			if (hasLoaded())
+		private function progress(e:Event):void 
+		{
+			// how much we've loaded thus far
+			loaded = loaderInfo.bytesLoaded / loaderInfo.bytesTotal;
+			
+			// update loader graphic
+			loader.graphics.clear();
+			loader.graphics.beginFill(loaderColor);
+			loader.graphics.drawRect(0, 0, loaded * (loaderWidth - 8), loaderHeight - 8);
+			loader.graphics.endFill();
+			
+			// update text
+			text.text = "Loading: " + Math.ceil(loaded * 100) + "%";
+			
+			// done loading?
+			if (loaderInfo.bytesLoaded >= loaderInfo.bytesTotal)
 			{
-				stage.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 				startup();
 			}
 		}
 		
-		private function hasLoaded (): Boolean {
-			return (loaderInfo.bytesLoaded >= loaderInfo.bytesTotal);
+		private function startup():void 
+		{
+			// remove event listener(s)
+			stage.removeEventListener(Event.ENTER_FRAME, progress);
+			
+			// hide loader
+			stop();
+			
+			// remove all the children
+			var i:int = numChildren;
+			while (i --)
+			{
+				removeChildAt(i)
+			}
+			
+			// go to the main class
+			var mainClass:Class = getDefinitionByName("Main") as Class;
+			parent.addChild(new mainClass as DisplayObject);
+			
+			// remove self
+			parent.removeChild(this)
 		}
 		
-		private function startup (): void {
-			stage.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
-			
-			parent.addChild(new Main() as DisplayObject);
-			
-			parent.removeChild(this);
-		}
 	}
+	
 }
